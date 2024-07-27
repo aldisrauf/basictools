@@ -6,11 +6,3 @@ roxygenise();
 devtools::document()
 devtools::build()
 
-
-NA %+% 8 %+% NA
-
-NA %-% 8 %-% 1
-
-?create_header
-?export_with_header
-load_
