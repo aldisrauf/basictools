@@ -12,3 +12,5 @@ Imports: rio, tidyverse, DescTools, openxlsx, janitor, flextable
 RoxygenNote: 7.2.1
 Suggests: 
     roxygen2
+URL: https://github.com/aldisrauf/basictools
+BugReports: https://github.com/aldisrauf/basictools/issues
