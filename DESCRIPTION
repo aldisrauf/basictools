@@ -1,0 +1,14 @@
+Package: basictools
+Type: Package
+Title: Basic Tools Package
+Version: 0.1.0
+Author: Aldi Saeful Rauf
+Maintainer: Aldi Saeful Rauf <aldirauf@gmail.com>
+Description: A set of basic functions to support your daily work.
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+Imports: rio, tidyverse, DescTools, openxlsx, janitor, flextable
+RoxygenNote: 7.2.1
+Suggests: 
+    roxygen2
