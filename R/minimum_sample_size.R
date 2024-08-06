@@ -41,7 +41,7 @@ samplesize_prop <- function(p, e, N, alpha = 0.05, deff = 1, rr = 0.9, moe_type 
 
   term1 = N * Z^2 * vari
   term2 = Z^2 * vari
-  term3 = ifelse(moe_type == "relative", N * e * p, N * e)
+  term3 = ifelse(moe_type == "relative", N * (e * p)^2, N * e^2)
   term4 = term1 / (term2 + term3)
   term5 = ceiling(term4 * deff / rr)
 
@@ -86,7 +86,7 @@ samplesize_mean <- function(x, sd, e, N, alpha = 0.05, deff = 1, rr = 0.9){
 
   term1 = N * Z^2 * vari
   term2 = Z^2 * vari
-  term3 = N * e * x
+  term3 = N * (e * x)^2
   term4 = term1 / (term2 + term3)
   term5 = ceiling(term4 * deff / rr)
 
