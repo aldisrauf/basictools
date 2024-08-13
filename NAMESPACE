@@ -2,6 +2,7 @@
 
 export("%+%")
 export("%-%")
+export("%like%")
 export(create_header)
 export(create_header_merge)
 export(export_with_header)
