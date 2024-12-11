@@ -34,14 +34,16 @@
 #'   varname = c("var1", "var2"),
 #'   domain = "domain",
 #'   data = df,
-#'   eval = "mean",
+#'   eval = "percentile",
 #'   eval_type = 1,
-#'   rank_type = "mean"
+#'   percentile = 0.25,
+#'   rank_type = "q1"
 #' )
 #'
 #' # Access results
 #' result$strata_final
 #' result$summarise
+#' @export
 indeks_konsentrasi <- function(
     id, varname, domain, data, eval = "mean", percentile = NULL, eval_type = c(1, 2, 3, 4), rank_type = c("mean", "q1"), remove_zero_eval = FALSE
 ) {

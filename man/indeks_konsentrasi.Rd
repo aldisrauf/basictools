@@ -62,9 +62,10 @@ result <- indeks_konsentrasi(
   varname = c("var1", "var2"),
   domain = "domain",
   data = df,
-  eval = "mean",
+  eval = "percentile",
   eval_type = 1,
-  rank_type = "mean"
+  percentile = 0.25,
+  rank_type = "q1"
 )
 
 # Access results
