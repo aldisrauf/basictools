@@ -13,7 +13,7 @@ indeks_konsentrasi(
   percentile = NULL,
   eval_type = c(1, 2, 3, 4),
   rank_type = c("mean", "q1"),
-  remove_zero_eval = FALSE
+  remove_zero_eval = F
 )
 }
 \arguments{
