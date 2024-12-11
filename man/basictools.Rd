@@ -2,10 +2,19 @@
 % Please edit documentation in R/basictools.R
 \docType{package}
 \name{basictools}
+\alias{basictools-package}
 \alias{basictools}
 \title{Basic Tools Package}
 \description{
 A set of basic functions to support your daily work.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/aldisrauf/basictools}
+  \item Report bugs at \url{https://github.com/aldisrauf/basictools/issues}
+}
+
 }
 \author{
 Aldi SAeful Rauf \email{aldirauf@gmail.com}
