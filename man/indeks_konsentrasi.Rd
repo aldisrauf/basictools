@@ -2,71 +2,72 @@
 % Please edit documentation in R/indeks_konsentrasi.R
 \name{indeks_konsentrasi}
 \alias{indeks_konsentrasi}
-\title{Concentration Index Calculation}
+\title{Indeks Konsentrasi Calculation}
 \usage{
 indeks_konsentrasi(
-  data,
-  variables,
+  id,
+  varname,
   domain,
-  rank_by,
-  eval_type,
-  threshold = 0,
-  include_zeros = TRUE
+  data,
+  eval = "mean",
+  percentile = NULL,
+  eval_type = c(1, 2, 3, 4),
+  rank_type = c("mean", "q1"),
+  remove_zero_eval = FALSE
 )
 }
 \arguments{
-\item{data}{A data frame. The dataset containing variables for concentration analysis.}
+\item{id}{A character vector specifying the ID variables for each observation.}
 
-\item{variables}{Character vector. Names of the variables to analyze for concentration indices.}
+\item{varname}{A character vector specifying the variable names to calculate the concentration index.}
 
-\item{domain}{Character. The column name specifying domain grouping (e.g., provinces or regions).}
+\item{domain}{A character vector specifying the domain or grouping variables.}
 
-\item{rank_by}{Character. Method for ranking strata. Options are `"mean"` for ranking by mean values and `"q1"` for ranking by the first quartile.}
+\item{data}{A data frame containing the input data.}
 
-\item{eval_type}{Integer. The type of evaluation to perform:
-\itemize{
-  \item \code{1}: Aggregate evaluation at the domain level.
-  \item \code{2}: Evaluation of top-ranked strata within domains.
-  \item \code{3}: Hierarchical evaluation for specific levels.
-  \item \code{4}: Combined stratified evaluation across multiple domains.
-}}
+\item{eval}{A character string specifying the evaluation method, either "mean" or "percentile". Defaults to "mean".}
 
-\item{threshold}{Numeric. A percentile threshold for concentration evaluation. Default is \code{0}.}
+\item{percentile}{A numeric value between 0 and 1 specifying the percentile value for evaluation when `eval = "percentile"`.}
 
-\item{include_zeros}{Logical. Whether to include zero values in concentration calculations. Default is \code{TRUE}.}
+\item{eval_type}{An integer (1 to 4) specifying the evaluation type. Defaults to 1.}
+
+\item{rank_type}{A character string specifying the ranking method, either "mean" or "q1". Defaults to "mean".}
+
+\item{remove_zero_eval}{A logical value. If `TRUE`, zeros are excluded during evaluation. Defaults to `FALSE`.}
 }
 \value{
-A list containing:
-  \itemize{
-    \item \code{processed_data}: Data frame with computed concentration indices and ranks.
-    \item \code{aggregated_summary}: Summary table of evaluated results across domains.
-    \item \code{inactive_data}: Rows flagged as inactive based on evaluation criteria.
-  }
+A list containing the following components:
+ \itemize{
+   \item \code{strata_final}: A data frame containing the final strata evaluation and calculated fields.
+   \item \code{summarise}: A summary table grouping by domain and evaluated strata.
+   \item \code{nonaktif}: A data frame of non-active rows (rows with zero totals across specified variables).
+   \item \code{data}: The processed input data frame with adjustments applied.
+ }
 }
 \description{
-The `indeks_konsentrasi` function calculates concentration indices, generates rankings, and evaluates strata within specified domains. It allows flexible customization of analysis based on specified variables and domains.
+This function calculates the concentration index for a given dataset, providing outputs for the ranking and evaluation of strata based on specified evaluation and ranking criteria.
 }
 \examples{
 # Example dataset
-data <- data.frame(
-  strata = c("A", "B", "C", "D"),
-  value = c(10, 20, 0, 15),
-  domain = c("X", "X", "Y", "Y")
+df <- data.frame(
+  id = c(1, 2, 3, 4),
+  domain = c("A", "A", "B", "B"),
+  var1 = c(10, 20, 0, 40),
+  var2 = c(5, 15, 0, 35)
 )
 
-# Function call
+# Run the function
 result <- indeks_konsentrasi(
-  data = data,
-  variables = "value",
+  id = "id",
+  varname = c("var1", "var2"),
   domain = "domain",
-  rank_by = "mean",
+  data = df,
+  eval = "mean",
   eval_type = 1,
-  threshold = 0.1,
-  include_zeros = TRUE
+  rank_type = "mean"
 )
 
-# Output results
-print(result$processed_data)
-print(result$aggregated_summary)
-
+# Access results
+result$strata_final
+result$summarise
 }
