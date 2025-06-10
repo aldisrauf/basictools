@@ -3,7 +3,7 @@
 #' Menjalankan contoh aplikasi Shiny dari package basictools.
 #'
 #' @export
-run_simple_app <- function() {
+run_simple_app <- function(example) {
   # locate all the shiny app examples that exist
   validExamples <- list.files(system.file("shiny", package = "basictools"))
 
@@ -17,7 +17,7 @@ run_simple_app <- function() {
   if (missing(example) || !nzchar(example) ||
       !example %in% validExamples) {
     stop(
-      'Please run `runExample()` with a valid example app as an argument.\n',
+      'Please run `run_simple_app()` with a valid example app as an argument.\n',
       validExamplesMsg,
       call. = FALSE)
   }
