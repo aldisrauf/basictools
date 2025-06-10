@@ -4,8 +4,8 @@
 #'
 #' @export
 run_simple_app <- function() {
-  app_dir <- system.file("shiny/simple_app", package = "basictools")
-  validExamples <- list.files(app_dir)
+  # locate all the shiny app examples that exist
+  validExamples <- list.files(system.file("shiny", package = "basictools"))
 
   validExamplesMsg <-
     paste0(
@@ -13,8 +13,16 @@ run_simple_app <- function() {
       paste(validExamples, collapse = "', '"),
       "'")
 
-  if (app_dir == "") {
-    stop("Folder aplikasi Shiny tidak ditemukan di dalam package.", call. = FALSE)
+  # if an invalid example is given, throw an error
+  if (missing(example) || !nzchar(example) ||
+      !example %in% validExamples) {
+    stop(
+      'Please run `runExample()` with a valid example app as an argument.\n',
+      validExamplesMsg,
+      call. = FALSE)
   }
-  shiny::runApp(app_dir, display.mode = "normal")
+
+  # find and launch the app
+  appDir <- system.file("shiny", example, package = "basictools")
+  shiny::runApp(appDir, display.mode = "normal")
 }
