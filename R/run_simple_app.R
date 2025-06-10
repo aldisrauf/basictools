@@ -4,7 +4,7 @@
 #'
 #' @export
 run_simple_app <- function() {
-  app_dir <- system.file("shiny_examples", package = "mypackage")
+  app_dir <- system.file("shiny_examples", package = "basictools")
   if (app_dir == "") {
     stop("Folder aplikasi Shiny tidak ditemukan di dalam package.", call. = FALSE)
   }
