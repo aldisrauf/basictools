@@ -1221,7 +1221,7 @@ server <- function(input, output, session) {
       mutate(
         Variable = gsub(tes, "", Variable)
       ) %>%
-      select(-c(tes)) %>%
+      dplyr::select(-c(tes)) %>%
       tidyr::pivot_wider(names_from = type, values_from = Estimate)
 
     df_long_est
