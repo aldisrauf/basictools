@@ -47,6 +47,7 @@ install_load("broom") #rapiin hasil sw
 install_load("shinyjs") #toggle rlb
 install_load("survey") #toggle rlb
 install_load("srvyr") #toggle rlb
+install_load("glue") #toggle rlb
 
 survey_est = function(est_type = "mean", x, denominator = NULL, na.rm = FALSE, vartype =  c("se", "ci", "var", "cv"), level = 0.95, proportion = FALSE, prop_method = c("logit", "likelihood", "asin", "beta", "mean", "xlogit"), deff = FALSE, df = NULL){
   if(est_type == "mean"){
@@ -69,6 +70,8 @@ survey_est = function(est_type = "mean", x, denominator = NULL, na.rm = FALSE, v
 
   return(res)
 }
+
+
 
 is.wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
   is.numeric(x) && all(abs(x - round(x)) < tol, na.rm = TRUE)
@@ -464,7 +467,13 @@ ui <-
                   textInput(inputId = "namaFileEst", label = "Nama file"),
                   downloadBttn(outputId = "downloadDataEst", label = "Export", color = "default", no_outline = FALSE, style = "unite")
                 )
+              ),
+              tabPanel(
+                shinyjs::useShinyjs(),
+                title = "Source Code",
+                verbatimTextOutput("syntaxAll") %>% withSpinner(color="#0dc5c1", type = 8)
               )
+
             )
           )
         )
@@ -909,34 +918,6 @@ server <- function(input, output, session) {
     selected_fpc(input$sel_fpc)
     selected_weight(input$sel_weight)
 
-
-#
-#     if(is.null(input$sel_ids)){
-#       print("NYAMPE A")
-#       ids_sel <- "--NOTHING--"
-#     }else{
-#       if(is.na(input$ids_sel)){
-#         print("NYAMPE B")
-#         ids_sel <- "--NOTHING--"
-#       }else{
-#         print("NYAMPE C")
-#         ids_sel <- ifelse(input$sel_ids %in% c("", "NA"), "--NOTHING--", input$sel_ids)
-#       }
-#     }
-#
-#     if(is.null(input$sel_fpc)){
-#       print("NYAMPE D")
-#       fpc_sel <- "--NOTHING--"
-#     }else{
-#       if(is.na(input$fpc_sel)){
-#         print("NYAMPE E")
-#         fpc_sel <- "--NOTHING--"
-#       }else{
-#         print("NYAMPE F")
-#         fpc_sel <- ifelse(input$sel_fpc %in% c("", "NA"), "--NOTHING--", input$sel_fpc)
-#       }
-#     }
-
     ids_sel <- ifelse(is.null(input$sel_ids) || is.na(input$sel_ids) || input$sel_ids == "", "--NOTHING--", input$sel_ids)
     fpc_sel <- ifelse(is.null(input$sel_fpc) || is.na(input$sel_fpc) || input$sel_fpc == "", "--NOTHING--", input$sel_fpc)
 
@@ -1143,7 +1124,7 @@ server <- function(input, output, session) {
           across(
             input$sel_varest,
             list(
-              est = ~survey_est(est_type = input$sel_method, .x, deff = T, vartype = c("se", "var", "cv", "ci"), na.rm = T),
+              est = ~survey_est(est_type = input$sel_method, .x, deff = T, vartype = c("se", "var", "cv", "ci"), na.rm = my_narm),
               n = ~sum(!is.na(.x))
             )
           )
@@ -1155,7 +1136,7 @@ server <- function(input, output, session) {
           across(
             input$sel_varest,
             list(
-              est = ~survey_est(est_type = input$sel_method, .x, denominator = !!sym(input$sel_denom), deff = T, vartype = c("se", "var", "cv", "ci"), na.rm = T),
+              est = ~survey_est(est_type = input$sel_method, .x, denominator = !!sym(input$sel_denom), deff = T, vartype = c("se", "var", "cv", "ci"), na.rm = my_narm),
               n = ~sum(!is.na(.x))
             )
           )
@@ -1360,6 +1341,140 @@ server <- function(input, output, session) {
     vars <- length(input$sel_varest)
     # 200px per variable + 100px extra for titles/margins
     200 * vars + 100
+  })
+
+  desain_survey_syn <- reactiveVal(NULL)
+  estimate_syn <- reactiveVal(NULL)
+
+  observeEvent(input$go_est,{
+
+    req(data_RSE())
+
+    selected_ids(input$sel_ids)
+    selected_strata(input$sel_strata)
+    selected_fpc(input$sel_fpc)
+    selected_weight(input$sel_weight)
+
+    ids_sel <- ifelse(is.null(input$sel_ids) || is.na(input$sel_ids) || input$sel_ids == "", "--NOTHING--", input$sel_ids)
+    fpc_sel <- ifelse(is.null(input$sel_fpc) || is.na(input$sel_fpc) || input$sel_fpc == "", "--NOTHING--", input$sel_fpc)
+
+    strata_sel = input$sel_strata
+    weight_sel = input$sel_weight
+
+    dataku<-myData()
+
+    if(ids_sel != "--NOTHING--"){
+      if(fpc_sel != "--NOTHING--"){
+        syn_des = glue::glue("des <- dataku %>%
+          mutate({strata_sel} = factor({strata_sel})) %>%
+          srvyr::as_survey_design(
+            id = {ids_sel},
+            strata = {strata_sel},
+            fpc = {fpc_sel},
+            w = {weight_sel}
+          )")
+      }else{
+        syn_des = glue::glue("des <- dataku %>%
+          mutate({strata_sel} = factor({strata_sel})) %>%
+          srvyr::as_survey_design(
+            id = {ids_sel},
+            fpc = {fpc_sel},
+            w = {weight_sel}
+          )")
+      }
+    }else{
+      if(fpc_sel != "--NOTHING--"){
+        syn_des = glue::glue("des <- dataku %>%
+          mutate({strata_sel} = factor({strata_sel})) %>%
+          srvyr::as_survey_design(
+            id = 1,
+            strata = {strata_sel},
+            fpc = {fpc_sel},
+            w = {weight_sel}
+          )")
+      }else{
+        syn_des = glue::glue("des <- dataku %>%
+          mutate({strata_sel} = factor({strata_sel})) %>%
+          srvyr::as_survey_design(
+            id = 1,
+            strata = {strata_sel},
+            w = {weight_sel}
+          )")
+      }
+    }
+
+    desain_survey_syn(as.character(syn_des))
+
+
+    my_narm = ifelse(input$sel_narm == "true", "TRUE", "FALSE")
+
+    if(input$sel_method == "mean"){
+      est_syn = paste0("~survey_mean(.x, deff = T, vartype = c('se', 'var', 'cv', 'ci'), na.rm = ",my_narm,")")
+    }else{
+      if(input$sel_method == "prop"){
+        est_syn = paste0("~survey_mean(.x, deff = T, vartype = c('se', 'var', 'cv', 'ci'), proportion = TRUE, na.rm = ",my_narm,")")
+      }else{
+        if(input$sel_method == "total"){
+          est_syn = paste0("~survey_total(.x, deff = T, vartype = c('se', 'var', 'cv', 'ci'), na.rm = ",my_narm,")")
+        }else{
+          if(input$sel_method == "ratio"){
+            est_syn = paste0("~survey_ratio(.x, denominator = ",input$sel_denom,", deff = T, vartype = c('se', 'var', 'cv', 'ci'), na.rm = ",my_narm,")")
+          }else{
+            est_syn = "---"
+          }
+        }
+      }
+    }
+
+    listvar <- paste0({input$sel_varest}, collapse = ", ")
+
+    est_syn_final <-  glue::glue(
+        "est = des %>%
+        srvyr::group_by({input$sel_agg}) %>%
+        srvyr::summarise(
+          across(
+            c({listvar}),
+            list(
+              est = {est_syn},
+              n = ~sum(!is.na(.x))
+            )
+          )
+        )"
+      )
+
+
+    estimate_syn(est_syn_final)
+
+
+  })
+
+  syntax <- reactive({
+    inFile <- input$file
+    req(inFile)
+    req(desain_survey_syn())
+    req(estimate_syn())
+
+    syn_lib = paste0("library(rio) \n library(tidyverse) \n library(srvyr)")
+
+    syn_importdata = paste0("dataku = rio::import('", inFile$name ,"')")
+
+    syn_setdesain = desain_survey_syn()
+
+    #print(str(inFile))
+
+    syn_all = paste0(
+      syn_lib, "\n \n",
+      syn_importdata, "\n \n",
+      syn_setdesain, "\n \n",
+      estimate_syn(), "\n \n",
+      collapse = "\n \n"
+    )
+
+
+  })
+
+  output$syntaxAll<-renderPrint({
+    cat(syntax(), sep = "\n")
   })
 
 
