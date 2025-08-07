@@ -4,8 +4,8 @@
 \alias{run_simple_app}
 \title{Jalankan Aplikasi Shiny Sederhana}
 \usage{
-run_simple_app()
+run_simple_app(example)
 }
 \description{
-Menjalankan aplikasi Shiny contoh sederhana yang ada dalam package.
+Menjalankan contoh aplikasi Shiny dari package basictools.
 }

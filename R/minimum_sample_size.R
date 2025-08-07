@@ -14,40 +14,48 @@
 #' @examples
 #' samplesize_prop(p = 0.5, e = 0.05, N = 10000)
 #' @export
-samplesize_prop <- function(p, e, N, alpha = 0.05, deff = 1, rr = 0.9, moe_type = "relative"){
-
-  if(p <= 0 | p >= 1){
-    stop("p (proportion) must be (0, 1)")
-  }
-
-  if(e <= 0 | e >= 1){
-    stop("e (margin of error) must be (0, 1)")
-  }
-
-  if(rr <= 0 | rr >= 1){
-    stop("rr (expected response rate) must be (0, 1)")
-  }
-
-  if(N < 0){
-    stop("N (number of population) must be larger than 0")
-  }
-
-  if(!(moe_type %in% c("relative", "absolute"))){
+samplesize_prop <- function(p, e, N,
+                            alpha = 0.05,
+                            deff  = 1,
+                            rr    = 0.9,
+                            moe_type = "relative") {
+  # pastikan moe_type tunggal dan valid
+  if (length(moe_type) != 1 || !(moe_type %in% c("relative", "absolute"))) {
     stop("moe_type must be either 'relative' or 'absolute'")
   }
 
-  Z = qnorm(alpha/2, lower.tail = FALSE)
-  vari = p * (1 - p)
+  # hitung panjang target
+  lens <- c(length(p), length(e), length(N), length(deff), length(rr))
+  m    <- max(lens)
+  # cek konsistensi
+  if (!all(lens %in% c(1, m))) {
+    stop("All of p, e, N, deff, rr must be length 1 or length ", m)
+  }
+  # recycle semua ke panjang m
+  p     <- rep(p,     length.out = m)
+  e     <- rep(e,     length.out = m)
+  N     <- rep(N,     length.out = m)
+  deff  <- rep(deff,  length.out = m)
+  rr    <- rep(rr,    length.out = m)
 
-  term1 = N * Z^2 * vari
-  term2 = Z^2 * vari
-  term3 = ifelse(moe_type == "relative", N * (e * p)^2, N * e^2)
-  term4 = term1 / (term2 + term3)
-  term5 = ceiling(term4 * deff / rr)
+  # validasi nilai
+  if (any(p <= 0 | p >= 1))     stop("p (proportion) must be in (0,1)")
+  if (any(e <= 0 | e >= 1))     stop("e (margin of error) must be in (0,1)")
+  if (any(rr <= 0 | rr > 1))    stop("rr (response rate) must be in (0,1]")
+  if (any(N < 0))               stop("N (population size) must be >= 0")
 
-  term6 = ifelse(term5 > N, N, term5)
+  Z    <- qnorm(alpha/2, lower.tail = FALSE)
+  vari <- p * (1 - p)
 
-  return(term6)
+  term1 <- N * Z^2 * vari
+  term2 <-     Z^2 * vari
+  term3 <- if (moe_type == "relative") N * (e * p)^2 else N * e^2
+
+  raw_n <- term1 / (term2 + term3)
+  adj_n <- ceiling(raw_n * deff / rr)
+
+  # tidak boleh lebih besar dari N
+  pmin(adj_n, N)
 }
 
 
@@ -67,33 +75,44 @@ samplesize_prop <- function(p, e, N, alpha = 0.05, deff = 1, rr = 0.9, moe_type 
 #' @examples
 #' samplesize_mean(x = 50, sd = 10, e = 0.05, N = 10000)
 #' @export
-samplesize_mean <- function(x, sd, e, N, alpha = 0.05, deff = 1, rr = 0.9){
-
-  if(e <= 0 | e >= 1){
-    stop("e (margin of error) must be (0, 1)")
+samplesize_mean <- function(x, sd, e, N,
+                            alpha = 0.05,
+                            deff  = 1,
+                            rr    = 0.9) {
+  # hitung panjang terpanjang
+  lens <- c(length(x), length(sd), length(e), length(N), length(deff), length(rr))
+  m    <- max(lens)
+  # cek konsistensi: semua harus 1 atau m
+  if (!all(lens %in% c(1, m))) {
+    stop("All of x, sd, e, N, deff, rr must be length 1 or length ", m)
   }
+  # recycle semua ke panjang m
+  x    <- rep(x,    length.out = m)
+  sd   <- rep(sd,   length.out = m)
+  e    <- rep(e,    length.out = m)
+  N    <- rep(N,    length.out = m)
+  deff <- rep(deff, length.out = m)
+  rr   <- rep(rr,   length.out = m)
 
-  if(rr <= 0 | rr >= 1){
-    stop("rr (expected response rate) must be (0, 1)")
-  }
+  # validasi
+  if (any(e <= 0 | e >= 1))       stop("e (margin of error) must be in (0,1)")
+  if (any(rr <= 0 | rr > 1))     stop("rr (response rate) must be in (0,1]")
+  if (any(N < 0))                 stop("N (population size) must be >= 0")
 
-  if(N < 0){
-    stop("N (number of population) must be larger than 0")
-  }
+  Z    <- qnorm(alpha/2, lower.tail = FALSE)
+  vari <- sd^2
 
-  Z = qnorm(alpha/2, lower.tail = FALSE)
-  vari = sd^2
+  term1 <- N * Z^2 * vari
+  term2 <-     Z^2 * vari
+  term3 <- N * (e * x)^2
 
-  term1 = N * Z^2 * vari
-  term2 = Z^2 * vari
-  term3 = N * (e * x)^2
-  term4 = term1 / (term2 + term3)
-  term5 = ceiling(term4 * deff / rr)
+  raw_n <- term1 / (term2 + term3)
+  adj_n <- ceiling(raw_n * deff / rr)
 
-  term6 = ifelse(term5 > N, N, term5)
-
-  return(term6)
+  # batasi maksimum N
+  pmin(adj_n, N)
 }
+
 
 #' Calculate Sample Size Based on Previous Survey's Relative Standard Error
 #'
@@ -109,34 +128,36 @@ samplesize_mean <- function(x, sd, e, N, alpha = 0.05, deff = 1, rr = 0.9){
 #' @examples
 #' samplesize_res_prev(rse_target = 0.05, rse_prev = 0.1, n_prev = 500, N = 10000, rr = 0.9)
 #' @export
-samplesize_res_prev <- function(rse_target, rse_prev, n_prev, N, rr){
-  if(rse_target <= 0){
-    stop("rse_target must be greater than 0")
+samplesize_res_prev <- function(rse_target, rse_prev, n_prev, N, rr) {
+  # Hitung panjang terpanjang
+  lens <- c(length(rse_target), length(rse_prev), length(n_prev), length(N), length(rr))
+  m    <- max(lens)
+  # Cek konsistensi: semua argumen harus length 1 atau length m
+  if (!all(lens %in% c(1, m))) {
+    stop("All of rse_target, rse_prev, n_prev, N, rr must be length 1 or length ", m)
   }
+  # Recycle semua ke panjang m
+  rse_target <- rep(rse_target, length.out = m)
+  rse_prev   <- rep(rse_prev,   length.out = m)
+  n_prev     <- rep(n_prev,     length.out = m)
+  N          <- rep(N,          length.out = m)
+  rr         <- rep(rr,         length.out = m)
 
-  if(rse_prev <= 0){
-    stop("rse_prev must be greater than 0")
-  }
+  # Validasi
+  if (any(rse_target <= 0)) stop("rse_target must be greater than 0")
+  if (any(rse_prev   <= 0)) stop("rse_prev   must be greater than 0")
+  if (any(n_prev     <= 0)) stop("n_prev     must be greater than 0")
+  if (any(N         <  0)) stop("N must be >= 0")
+  if (any(rr <= 0 | rr > 1)) stop("rr (response rate) must be in (0,1]")
 
-  if(n_prev <= 0){
-    stop("n_prev (sample size in previous survey which generate RSE with rse_prev value) must be greater than 0")
-  }
+  # Perhitungan
+  term1 <- (rse_prev / rse_target)^2 * n_prev
+  term2 <- ceiling(term1 / rr)
 
-  if(N < 0){
-    stop("N (number of population) must be larger than 0")
-  }
-
-  if(rr <= 0 | rr >= 1){
-    stop("rr (expected response rate) must be (0, 1)")
-  }
-
-  term1 = (rse_prev / rse_target)^2 * n_prev
-  term2 = ceiling(term1 / rr)
-
-  term3 = ifelse(term2 > N, N, term2)
-
-  return(term3)
+  # Batasi maksimum N
+  pmin(term2, N)
 }
+
 
 #' Calculate Sample Size Using Slovin's Formula
 #'
@@ -151,26 +172,31 @@ samplesize_res_prev <- function(rse_target, rse_prev, n_prev, N, rr){
 #' @examples
 #' samplesize_slovin(d = 0.05, N = 10000)
 #' @export
-samplesize_slovin <- function(d, N, deff = 1, rr = 0.9){
-
-  if(d <= 0 | d >= 1){
-    stop("d (absolute margin of error) must be (0, 1)")
+samplesize_slovin <- function(d, N,
+                              deff = 1,
+                              rr   = 0.9) {
+  # Hitung panjang terpanjang
+  lens <- c(length(d), length(N), length(deff), length(rr))
+  m    <- max(lens)
+  # Cek konsistensi: semua argumen harus length 1 atau length m
+  if (!all(lens %in% c(1, m))) {
+    stop("All of d, N, deff, rr must be length 1 or length ", m)
   }
+  # Recycle semua ke panjang m
+  d     <- rep(d,     length.out = m)
+  N     <- rep(N,     length.out = m)
+  deff  <- rep(deff,  length.out = m)
+  rr    <- rep(rr,    length.out = m)
 
-  if(rr <= 0 | rr >= 1){
-    stop("rr (expected response rate) must be (0, 1)")
-  }
+  # Validasi
+  if (any(d <= 0 | d >= 1))    stop("d (absolute margin of error) must be in (0,1)")
+  if (any(rr <= 0 | rr > 1))  stop("rr (response rate) must be in (0,1]")
+  if (any(N < 0))              stop("N (population size) must be >= 0")
 
-  if(N < 0){
-    stop("N (number of population) must be larger than 0")
-  }
+  # Perhitungan Slovin
+  term1 <- N / (1 + N * d^2)
+  term2 <- ceiling(term1 * deff / rr)
 
-  term1 = N / (1 + N * d^2)
-  term2 = ceiling(term1 * deff / rr)
-
-  term3 = ifelse(term2 > N, N, term2)
-
-  return(term3)
+  # Batasi maksimum N
+  pmin(term2, N)
 }
-
-

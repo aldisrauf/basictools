@@ -8,7 +8,7 @@ Description: A set of basic functions to support your daily work.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
-Imports: rio, tidyverse, DescTools, openxlsx, janitor, flextable, glue
+Imports: rio, tidyverse, DescTools, openxlsx, janitor, flextable, glue, GFE
 RoxygenNote: 7.3.2
 Suggests: 
     roxygen2
