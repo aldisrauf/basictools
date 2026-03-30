@@ -19,8 +19,5 @@ export(samplesize_res_prev)
 export(samplesize_slovin)
 export(stratifikasi_indeks)
 export(yes)
-<<<<<<< HEAD
-import(openxlsx)
-=======
 import(data.table)
->>>>>>> 91d7a8eb118757182e424012896dc4f261adb883
+import(openxlsx)

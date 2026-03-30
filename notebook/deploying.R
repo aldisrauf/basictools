@@ -16,3 +16,10 @@ kom_details= rio::import("data/kom_details.Rda")
 
 usethis::use_data(bridge23_kab, bridge23_prov, kbli_details, kom_details, overwrite = T)
 
+# Jalankan ini di Konsol R
+#install.packages("gitcreds")
+#library("gitcreds")
+#gitcreds_set()
+
+colnames(kbli_details)
+colnames(kom_details)
