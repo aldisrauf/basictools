@@ -1,11 +1,13 @@
-#' Basic Tools Package
+#' basictools: Basic Tools Package
 #'
 #' A set of basic functions to support your daily work.
 #'
 #'
-#' @docType package
-#'
-#' @author Aldi SAeful Rauf \email{aldirauf@gmail.com}
-#'
+#' @docType _PACKAGE
 #' @name basictools
+#' @keywords internal
+"_PACKAGE"
+
+## usethis namespace: start
+## usethis namespace: end
 NULL
